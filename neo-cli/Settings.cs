@@ -2,7 +2,6 @@
 using Neo.Network;
 using System;
 using System.IO;
-
 namespace Neo
 {
     internal class Settings
@@ -15,7 +14,14 @@ namespace Neo
 
         static Settings()
         {
-            IConfigurationSection section = new ConfigurationBuilder().AddJsonFile("config.json").Build().GetSection("ApplicationConfiguration");
+
+            var configBasePath = Environment.GetEnvironmentVariable("NEOCLI_BASEPATH");
+            var builder = new ConfigurationBuilder();
+            if (configBasePath != null) {
+                builder.SetBasePath(configBasePath);
+            }
+
+            IConfigurationSection section = builder.AddJsonFile("config.json").Build().GetSection("ApplicationConfiguration");
             Default = new Settings(section);
         }
 
@@ -35,7 +41,14 @@ namespace Neo
         public PathsSettings(IConfigurationSection section)
         {
             this.Chain = section.GetSection("Chain").Value;
-            this.ApplicationLogs = Path.Combine(AppContext.BaseDirectory, $"ApplicationLogs_{Message.Magic:X8}");
+            var configBasePath = Environment.GetEnvironmentVariable("NEOCLI_BASEPATH");
+            if (configBasePath != null)
+            {
+                this.ApplicationLogs = Path.Combine(configBasePath, $"ApplicationLogs_{Message.Magic:X8}");
+            } else {
+                this.ApplicationLogs = Path.Combine(AppContext.BaseDirectory, $"ApplicationLogs_{Message.Magic:X8}");    
+            }
+
         }
     }
 

@@ -103,11 +103,11 @@ namespace Neo.Services
         public void Run(string[] args)
         {
             OnStart(args);
-            RunConsole();
+            RunConsole(args);
             OnStop();
         }
 
-        private void RunConsole()
+        private void RunConsole(string[] args)
         {
             bool running = true;
 #if NET461
@@ -120,32 +120,44 @@ namespace Neo.Services
             Console.WriteLine($"{ServiceName} Version: {ver}");
             Console.WriteLine();
 
+            var withInput = true;
+            foreach (String arg in args)
+            {
+                Console.WriteLine(arg);
+                if (arg == "noinput")
+                {
+                    withInput = false;
+                }
+            }
+
             while (running)
             {
-                if (ShowPrompt)
+                if (withInput == true)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write($"{Prompt}> ");
-                }
+                    if (ShowPrompt)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write($"{Prompt}> ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    string line = Console.ReadLine().Trim();
+                    Console.ForegroundColor = ConsoleColor.White;
 
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                string line = Console.ReadLine().Trim();
-                Console.ForegroundColor = ConsoleColor.White;
-
-                string[] args = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (args.Length == 0)
-                    continue;
-                try
-                {
-                    running = OnCommand(args);
-                }
-                catch (Exception ex)
-                {
+                    string[] inputArgs = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (inputArgs.Length == 0)
+                        continue;
+                    try
+                    {
+                        running = OnCommand(inputArgs);
+                    }
+                    catch (Exception ex)
+                    {
 #if DEBUG
-                    Console.WriteLine($"error: {ex.Message}");
+                        Console.WriteLine($"error: {ex.Message}");
 #else
                     Console.WriteLine("error");
 #endif
+                    }
                 }
             }
 

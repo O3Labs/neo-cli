@@ -11,7 +11,9 @@ namespace Neo
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            using (FileStream fs = new FileStream("error.log", FileMode.Create, FileAccess.Write, FileShare.None))
+            var configBasePath = Environment.GetEnvironmentVariable("NEOCLI_BASEPATH");
+            var logFile = Path.Combine(configBasePath,"error.log");
+            using (FileStream fs = new FileStream(logFile, FileMode.Create, FileAccess.Write, FileShare.None))
             using (StreamWriter w = new StreamWriter(fs))
             {
                 PrintErrorLogs(w, (Exception)e.ExceptionObject);
